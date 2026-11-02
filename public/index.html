@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f7f4ec">
+  <meta name="description" content="从每一次选择里，遇见一个角色。">
+  <title>次元来信 · 在另一个宇宙，遇见你</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body data-view="home">
+  <a class="skip" href="#main">跳到主要内容</a>
+  <header class="site-header"><div class="header-inner">
+    <button class="brand" data-action="home" aria-label="次元来信首页"><span class="brand-icon">✳</span><span>次元来信<small>ANIMA LETTER</small></span></button>
+
+    <button id="account-button" class="account-button" data-action="account">解锁来信 <span>↗</span></button>
+  </div></header>
+  <main id="main" tabindex="-1"><div class="initial-loading"><span class="loading-symbol">✳</span><p>正在打开次元来信…</p></div></main>
+  <footer class="site-footer"><div class="footer-top"><span class="footer-brand">✳ 次元来信</span></div><p>趣味性格探索 · 角色相关权利归各自权利人所有。</p></footer>
+  <dialog id="modal" aria-labelledby="modal-title"><button class="modal-close" data-action="close-modal" aria-label="关闭弹窗">×</button><div id="modal-content"></div></dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+</body></html>

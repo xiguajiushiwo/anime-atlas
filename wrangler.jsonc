@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "anime-atlas",
+  "account_id": "6ce1c0f9c381f527b2bfb2746d723b09",
+  "main": "worker/index.mjs",
+  "compatibility_date": "2026-10-01",
+  "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": ["/api/*"], "not_found_handling": "single-page-application" },
+  "d1_databases": [{ "binding": "DB", "database_name": "anime-atlas", "database_id": "302f9c14-daf9-4ad4-8288-58e183a63817" }],
+  "triggers": { "crons": ["0 3 * * *"] },
+  "observability": { "enabled": true }
+}
