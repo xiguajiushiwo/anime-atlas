@@ -232,4 +232,4 @@ export const characters = curateCharacters(
   }))
 );
 export const works = [...new Set(characters.map(x => x.work))];
-export const modes = [{ id:'light', count:12, minutes:'约 3 分钟', name:'轻量探索', desc:'快速遇见另一面的自己' },{ id:'standard',count:24,minutes:'约 6 分钟',name:'完整档案',desc:'让更多情境参与判断' },{ id:'deep',count:36,minutes:'约 9 分钟',name:'深度共鸣',desc:'多一点时间，多一层理解' }];
+export {modes} from './test-modes.mjs';

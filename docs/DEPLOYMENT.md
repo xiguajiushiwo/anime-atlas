@@ -6,7 +6,7 @@
 - GitHub 私有仓库：https://github.com/xiguajiushiwo/anime-atlas
 - 主分支：`main`
 - Cloudflare Worker：`anime-atlas`
-- 当前发布版本：`d78a178a-2f64-4566-a5c5-0d3bbd279421`
+- 当前发布版本：`7a4bc8b5-abee-4057-a23e-ee07ff816e29`
 - D1 数据库：`anime-atlas`，绑定名 `DB`，实际 ID 已保存在 `wrangler.jsonc`。
 
 站点使用 Cloudflare 提供的 HTTPS 地址，当前未绑定自定义域名。公网入口同样需要解锁码，`?preview=1` 不会绕过密码。
@@ -33,4 +33,4 @@ npx wrangler deploy
 
 本地 `scripts/verify-deployment.mjs` 可复查解锁和完整答题流程。测试会留下独立的测试会话与少量结果，不会消耗或作废解锁码。
 
-本次发布已通过真实 HTTPS 接口检查，以及 1440×900 桌面与 390×844 手机浏览器检查。手机完成 24 题并正确显示女性角色结果，刷新后的解锁记忆有效，未发现页面脚本错误或横向溢出。
+本次长题更新通过 30 项自动测试、本地 HTTP 36 / 60 / 90 题检查，以及 1440×900 桌面 60 题、390×844 手机 90 题浏览器检查。报告、暂存恢复、历史与 PNG 下载通过。Cloudflare 发布成功，无数据库迁移；本机代理关闭且正式域名直连超时，本轮公网 HTTP 复查尚未完成。上一版曾完成正式站点 HTTPS 验证。本轮使用可连通的 GitHub API 同步精确 Git 对象；未更改系统代理或 DNS 设置。

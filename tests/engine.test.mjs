@@ -18,17 +18,17 @@ test('大众精选取消人数配额，未入选的作品和配角不会匹配',
  }
  assert.deepEqual(curateCharacters([...characters,{...characters[0],id:'unreviewed-addition'}]).map(c=>c.id),characters.map(c=>c.id));
 });
-test('三种模式按六类均衡抽样且轮内不重复',()=>{for(const n of [12,24,36]){const selection=selectQuestions(n,[],random());assert.equal(selection.length,n);assert.equal(new Set(selection.map(q=>q.id)).size,n);for(const cat of categories)assert.equal(selection.filter(s=>questions.find(q=>q.id===s.id).category===cat).length,n/6);for(const s of selection){const q=questions.find(x=>x.id===s.id);assert.equal(s.order.length,q.options.length);assert.deepEqual([...s.order].sort(),q.options.map(o=>o.id).sort())}}});
+test('新旧模式按六类均衡抽样且轮内不重复',()=>{for(const n of [12,24,36,60,90]){const selection=selectQuestions(n,[],random());assert.equal(selection.length,n);assert.equal(new Set(selection.map(q=>q.id)).size,n);for(const cat of categories)assert.equal(selection.filter(s=>questions.find(q=>q.id===s.id).category===cat).length,n/6);for(const s of selection){const q=questions.find(x=>x.id===s.id);assert.equal(s.order.length,q.options.length);assert.deepEqual([...s.order].sort(),q.options.map(o=>o.id).sort())}}});
 test('近期抽过的题目有足够替代时不会再次选中',()=>{const a=selectQuestions(12,[],random()),b=selectQuestions(24,a.map(x=>x.id),random());assert.ok(b.every(x=>!a.some(y=>x.id===y.id)))});
 test('每个角色用自身参数都能排到第一，避免同模板角色永远不可达',()=>{for(const c of characters)assert.equal(rankCharacters(c.vector)[0].character.id,c.id,c.name)});
 test('展示给浏览器的题目不包含权重',()=>{const output=JSON.stringify(presentQuestions(selectQuestions(12,[],random())));assert.ok(!output.includes('weights'))});
 test('不完整和伪造答案被拒绝，合法分数保持在 0–100',()=>{const s=selectQuestions(12,[],random());assert.throws(()=>scoreAnswers(s,{}));assert.throws(()=>scoreAnswers(s,Object.fromEntries(s.map(q=>[q.id,'fake']))));const scores=scoreAnswers(s,Object.fromEntries(s.map(q=>[q.id,'0'])));assert.ok(scores.every(x=>x>=0&&x<=100))});
 test('匹配使用筛选范围，空范围清晰报错',()=>{assert.ok(rankCharacters(characters[0].vector,{gender:'female'}).every(x=>x.character.gender==='female'));assert.throws(()=>rankCharacters(characters[0].vector,{work:'排球少年!!',gender:'female'}));const r=makeReport(characters[0].vector);assert.equal(r.character.id,'naruto');assert.equal(r.alternatives.length,2);assert.equal(r.overlaps.length,3);assert.ok(!('vector' in r.character))});
-test('每个角色在默认 24 题和深度 36 题中都能实际匹配到',()=>{
- for(const [count,file] of [[24,'reachable-standard.json'],[36,'reachable.json']]){
+test('每个角色在 24 / 36 / 60 / 90 题中均有合法真实答案可匹配',()=>{
+ for(const [count,file] of [[24,'reachable-standard.json'],[36,'reachable.json'],[60,'reachable-60.json'],[90,'reachable-90.json']]){
   const fixtures=JSON.parse(fs.readFileSync(new URL('./fixtures/'+file,import.meta.url),'utf8'));
   assert.equal(fixtures.length,characters.length);assert.deepEqual(fixtures.map(f=>f.characterId).sort(),characters.map(c=>c.id).sort());
-  for(const f of fixtures){assert.equal(f.selection.length,count);assert.equal(new Set(f.selection.map(q=>q.id)).size,count);assert.equal(rankCharacters(scoreAnswers(f.selection,f.answers))[0].character.id,f.characterId)}
+  for(const f of fixtures){assert.equal(f.selection.length,count);assert.equal(new Set(f.selection.map(q=>q.id)).size,count);for(const cat of categories)assert.equal(f.selection.filter(s=>questions.find(q=>q.id===s.id).category===cat).length,count/6);const scores=scoreAnswers(f.selection,f.answers);assert.equal(rankCharacters(scores)[0].character.id,f.characterId);const character=characters.find(c=>c.id===f.characterId);assert.equal(rankCharacters(scores,{gender:character.gender})[0].character.id,f.characterId)}
  }
 });
 test('完全均衡的回答明确提示未形成第一匹配',()=>{const r=makeReport(Array(8).fill(50));assert.equal(r.balanced,true);assert.match(r.reflection,/尚未形成明确/)});

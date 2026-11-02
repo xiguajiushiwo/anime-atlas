@@ -22,11 +22,15 @@ shutil.copyfile(project / 'README.md', destination / '使用与部署说明.md')
 shutil.copyfile(project / 'VALIDATION.md', destination / '验证记录.md')
 shutil.copyfile(project / 'CHARACTER_ROSTER.md', destination / '角色精选名单.md')
 shutil.copyfile(project / 'docs' / 'SALES_SETUP.md', destination / '密码售卖与发货配置.md')
+shutil.copyfile(project / 'docs' / 'MATCHING.md', destination / '匹配与报告规则.md')
 with zipfile.ZipFile(archive) as package:
     names = package.namelist()
     assert not any('/work/' in n or '/node_modules/' in n or '/.wrangler/' in n for n in names)
     assert 'anime-atlas/tests/fixtures/reachable.json' in names
     assert 'anime-atlas/tests/fixtures/reachable-standard.json' in names
+    assert 'anime-atlas/tests/fixtures/reachable-60.json' in names
+    assert 'anime-atlas/tests/fixtures/reachable-90.json' in names
+    assert 'anime-atlas/server/analysis.mjs' in names
     assert 'anime-atlas/worker/index.mjs' in names
     assert 'anime-atlas/CHARACTER_ROSTER.md' in names
     assert 'anime-atlas/docs/SALES_SETUP.md' in names

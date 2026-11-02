@@ -1,10 +1,11 @@
 import { characters, dimensions, modes } from '../data/characters.mjs';
 import { questions, categories } from '../data/questions.mjs';
+import {buildAnalysis,publicAnalysis} from './analysis.mjs';
 export const questionMap = new Map(questions.map(q=>[q.id,q]));
 export function shuffle(items, random=Math.random) { const a=[...items]; for(let i=a.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a; }
 export function secureRandom(){const n=new Uint32Array(1);crypto.getRandomValues(n);return n[0]/4294967296;}
 export function selectQuestions(count, recent=[], random=secureRandom){
-  if(![12,24,36].includes(count))throw new Error('不支持的测试长度');
+  if(!modes.some(mode=>mode.count===count))throw new Error('不支持的测试长度');
   const used=new Set(recent), selected=[];
   for(const category of categories){const pool=questions.filter(q=>q.category===category);const fresh=shuffle(pool.filter(q=>!used.has(q.id)),random);const previous=shuffle(pool.filter(q=>used.has(q.id)),random);selected.push(...fresh.concat(previous).slice(0,count/6))}
   return shuffle(selected,random).map(q=>({id:q.id,order:shuffle(q.options.map(o=>o.id),random)}));
@@ -46,12 +47,14 @@ function publicCharacter(c){
   const allowed=['id','name','work','gender','tag','color','summary','strength','blind','practice','scene'];
   return Object.fromEntries(allowed.filter(key=>key in c).map(key=>[key,c[key]]));
 }
-export function makeReport(scores, preferences={}, mode='standard'){
+export function makeReport(scores, preferences={}, mode='standard', context=null){
   const ranked=rankCharacters(scores,preferences),best=ranked[0],char=best.character;
   const userSig=signature(scores),charSig=signature(char.vector),balanced=Math.max(...scores)-Math.min(...scores)<=4;
   const overlaps=dimensions.map((d,i)=>({dimension:d.name,text:signals[i][scores[i]>=50?1:0],delta:Math.abs(userSig[i]-charSig[i]),strength:Math.abs(userSig[i])+Math.abs(charSig[i]),value:scores[i]})).sort((a,b)=>(a.delta-a.strength*.3)-(b.delta-b.strength*.3)).slice(0,3);
   const distinct=dimensions.map((d,i)=>({name:d.name,delta:Math.abs(userSig[i]-charSig[i]),value:scores[i],text:signals[i][scores[i]>=50?1:0]})).sort((a,b)=>b.delta-a.delta)[0];
-  return {version:2,createdAt:new Date().toISOString(),mode,balanced,questionCount:modes.find(x=>x.id===mode)?.count||24,character:publicCharacter(char),matchIndex:best.index,
+  const rows=context?context.selection.map(({id})=>{const question=questionMap.get(id);return{question,option:question.options.find(o=>o.id===context.answers[id])}}):[];
+  const analysis=rows.length?buildAnalysis(char,scores,rows):null;
+  return {version:analysis?3:2,...(analysis?{analysis}:{}),createdAt:new Date().toISOString(),mode,balanced,questionCount:rows.length||modes.find(x=>x.id===mode)?.count||24,character:publicCharacter(char),matchIndex:best.index,
     alternatives:ranked.slice(1,3).map(r=>({character:publicCharacter(r.character),matchIndex:r.index})),scores,overlaps,
     difference:{dimension:distinct.name,text:`你与${char.name}并不完全相同。在「${distinct.name}」方面，${distinct.text}。这部分差异同样值得保留。`},
     closeMatch:ranked.length>1&&best.index-ranked[1].index<=3,
@@ -59,6 +62,6 @@ export function makeReport(scores, preferences={}, mode='standard'){
     disclaimer:'趣味性的故事角色探索，不是心理诊断。角色解读用于帮助你观察本轮选择。'};
 }
 export function publicReport(report){
-  return {version:report.version,createdAt:report.createdAt,mode:report.mode,questionCount:report.questionCount,character:{id:report.character.id,name:report.character.name}};
+  return {version:report.version,createdAt:report.createdAt,mode:report.mode,questionCount:report.questionCount,character:{id:report.character.id,name:report.character.name},...(report.analysis?{analysis:publicAnalysis(report.analysis)}:{})};
 }
 export function catalog(){return characters.map(c=>publicCharacter(c))}

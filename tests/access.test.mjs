@@ -19,12 +19,29 @@ async function setup(){
  return{db,store,call,codeHash};
 }
 
+test('36 / 60 / 90 题保存完整的个性化来信，重读与重复提交保持一致',async()=>{
+ const {db,call}=await setup();try{
+  const access=await call('/unlock',{code});
+  for(const [mode,count] of [['story',36],['full',60],['extended',90]]){
+   const begun=await call('/runs',{mode},access.cookie);assert.equal(begun.status,201);
+   const run=begun.data.run;assert.equal(run.questions.length,count);
+   const answers=Object.fromEntries(run.questions.map(q=>[q.id,q.options[0].id]));
+   const done=await call('/runs/'+run.id+'/finish',{answers},access.cookie);assert.equal(done.status,200);
+   assert.equal(done.data.report.version,3);assert.equal(done.data.report.questionCount,count);assert.equal(done.data.report.analysis.recap.length,count);
+   for(const item of done.data.report.analysis.recap){const q=run.questions.find(q=>q.id===item.questionId);assert.equal(item.choice,q.options[0].label)}
+   assert.deepEqual((await call('/runs/'+run.id,undefined,access.cookie)).data.report,done.data.report);
+   assert.deepEqual((await call('/runs/'+run.id+'/finish',{answers:{}},access.cookie)).data.report,done.data.report);
+  }
+  assert.equal((await call('/history',undefined,access.cookie)).data.history.length,3);
+ }finally{db.close()}
+});
+
 test('未解锁不能访问题目；预览和旧注册入口不能绕过解锁',async()=>{
  const {db,call}=await setup();try{
   assert.equal((await call('/runs',{mode:'standard'})).status,401);
   for(const path of ['/demo','/register','/login','/redeem'])assert.equal((await call(path,{})).status,404);
   const b=await call('/bootstrap');assert.equal(b.data.demo,false);assert.equal(b.data.user,null);
-  for(const key of ['characters','works','dimensions','modes'])assert.deepEqual(b.data[key],[]);
+  for(const key of ['characters','works','dimensions'])assert.deepEqual(b.data[key],[]);assert.deepEqual(b.data.modes.map(m=>m.count),[36,60,90]);assert.equal(b.data.defaultMode,'full');
  }finally{db.close()}
 });
 

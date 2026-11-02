@@ -13,7 +13,7 @@ node scripts/dev.mjs
 node scripts/codes.mjs --count 5 --local --site http://127.0.0.1:4173
 ```
 
-打开 `http://127.0.0.1:4173/`。首页保留封面和「开始测试」按钮；点击后只显示一个解锁码输入框。解锁后依次进入测试介绍、角色性别范围、24 题和角色名字结果。选完自动进入下一题，可返回修改。
+打开 `http://127.0.0.1:4173/`。首页保留封面和「开始测试」按钮；点击后只显示一个解锁码输入框。解锁后依次进入测试介绍、角色性别与题量选择、答题和个性化来信。提供 36 / 60 / 90 题，默认 60 题。选完自动进入下一题，可返回修改；暂存后可在选择页继续，结果支持回看与 PNG 长图保存。
 
 解锁码从命令输出的 `codes.txt` 取得。`?preview=1` 也需要解锁，不再自动创建免码体验权限。
 
@@ -28,7 +28,7 @@ node scripts/codes.mjs --count 5 --local --site http://127.0.0.1:4173
 - 题目、评分和历史接口都检查有效解锁状态；停用某个码后，其已有会话也不能继续访问受保护接口。
 - 验证码表只保存解锁码哈希。按订单发码需重发原码，因此另以 AES-GCM 加密保存订单对应的码；加密密钥只放在服务器配置中。
 
-首页不展示角色清单、题库规模、评分参数或发货配置。用户结果只返回角色 ID 和名字。完整角色名单及资料来源见 `CHARACTER_ROSTER.md`，仅供所有者审核。
+首页不展示角色清单、题库规模、评分参数或发货配置。用户结果返回角色名字及基于本轮答案的分析，不返回评分向量、答案权重或完整名单。完整角色名单及资料来源见 `CHARACTER_ROSTER.md`，仅供所有者审核。
 
 ## 发货准备
 
@@ -79,7 +79,7 @@ npx wrangler d1 execute anime-atlas --remote --file work/codes/实际批次号/i
 
 ## 匹配与检查
 
-六类题目均衡随机抽取，优先避开最近三轮抽过的题。题库有限，不承诺永不重复。后台支持 12 / 24 / 36 题，当前用户入口使用 24 题。
+六类题目均衡随机抽取，优先避开最近三轮抽过的题。题库有限，不承诺永不重复。用户入口提供 36 / 60 / 90 题，默认 60 题；保留旧 12 / 24 / 36 题模式以兼容未完成测试。
 
 角色按八维相对倾向和四组投入程度匹配。人物参数是编辑解读，不是官方测量或心理诊断；角色可达不代表自然用户的结果频率均匀。每部人数不设配额，实际名单由 `data/roster-policy.mjs` 控制。
 
@@ -87,10 +87,12 @@ npx wrangler d1 execute anime-atlas --remote --file work/codes/实际批次号/i
 node --test tests/*.test.mjs
 node scripts/audit-reachability.mjs 24
 node scripts/audit-reachability.mjs 36
+node scripts/audit-reachability.mjs 60
+node scripts/audit-reachability.mjs 90
 node scripts/export-roster.mjs
 ```
 
-两种题数的答题见证保存于 `tests/fixtures/`。自动测试会从真实选项重新计分，并检查解锁、共享码的记录隔离、停用、订单重复通知和发码认证。
+24 / 36 / 60 / 90 题的答题见证保存于 `tests/fixtures/`。自动测试会从真实选项重新计分，并检查同角色不同回答的报告差异、证据与实际选择一致、解锁、共享码的记录隔离、停用、订单重复通知和发码认证。数据库用途、匹配规则、可达性边界与报告逻辑详见 `docs/MATCHING.md`。
 
 `scripts/verify-deployment.mjs` 可检查真实部署：用 `SMOKE_ORIGIN` 指定站点，`SMOKE_CODE_FILE` 指向已导入该站点数据库的密码文本文件。脚本会建立独立浏览器会话、完成三轮测试并核对权限与记录隔离；它不会打印密码。测试会在数据库留下少量测试记录。
 

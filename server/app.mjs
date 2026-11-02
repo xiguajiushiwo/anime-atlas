@@ -2,6 +2,7 @@ import {characters,dimensions,works,modes} from '../data/characters.mjs';
 import {catalog,selectQuestions,presentQuestions,scoreAnswers,makeReport,publicReport,rankCharacters} from './engine.mjs';
 import {hash,randomId,normalizeCode,cookieToken,sessionCookie,securityHeaders} from './security.mjs';
 import {handleFulfillment} from './fulfillment.mjs';
+import {visibleModes,defaultMode} from '../data/test-modes.mjs';
 const maxAge=90*86400;
 const safeUser=u=>u?{id:u.id,unlocked:!!u.unlocked_at}:null;
 class ApiError extends Error{constructor(status,message){super(message);this.status=status}}
@@ -23,7 +24,7 @@ export async function handleApi(request,store,env={}){
   const requireUnlocked=()=>{requireUser();if(!user.unlocked_at)throw new ApiError(403,'请输入解锁码后开始测试')};
   const body=async()=>{const text=await request.text();if(text.length>20000)throw new ApiError(413,'请求内容过长');try{return JSON.parse(text)}catch{throw new ApiError(400,'请求内容不是有效的数据')}};
   const throttle=async(action,limit=12)=>{const ip=request.headers.get('CF-Connecting-IP')||env.clientIp||'local';if(!await store.rate(`${action}:${await hash(ip)}`,limit,600000))throw new ApiError(429,'操作有些频繁，请稍后再试')};
-  if(path==='/api/bootstrap'&&request.method==='GET')return respond({user:safeUser(user),characters:[],dimensions:[],works:[],modes:[],demo:false});
+  if(path==='/api/bootstrap'&&request.method==='GET')return respond({user:safeUser(user),characters:[],dimensions:[],works:[],modes:visibleModes,defaultMode,demo:false});
   if(path==='/api/sample'&&request.method==='GET')return respond({report:{...publicReport(makeReport(characters[0].vector,{},'standard')),sample:true}});
   if(path==='/api/unlock'&&request.method==='POST'){
    await throttle('unlock',20);const b=await body();const code=normalizeCode(b?.code);
@@ -49,7 +50,7 @@ export async function handleApi(request,store,env={}){
   const match=path.match(/^\/api\/runs\/([a-f0-9]{48})(\/finish)?$/);
   if(match){requireUnlocked();const run=await store.getRun(match[1],user.id);if(!run)throw new ApiError(404,'没有找到这份档案');
    if(request.method==='GET'&&!match[2])return respond(run.report?{report:publicReport(run.report),id:run.id}:{run:{id:run.id,mode:run.mode,preferences:run.preferences,questions:presentQuestions(run.selection)}});
-   if(request.method==='POST'&&match[2]){if(run.report)return respond({report:publicReport(run.report),id:run.id});const b=await body();let scores;try{scores=scoreAnswers(run.selection,b.answers)}catch(e){throw new ApiError(400,e.message)}const report=await store.finishRun(run.id,user.id,makeReport(scores,run.preferences,run.mode));return respond({report:publicReport(report),id:run.id})}
+   if(request.method==='POST'&&match[2]){if(run.report)return respond({report:publicReport(run.report),id:run.id});const b=await body();let scores;try{scores=scoreAnswers(run.selection,b.answers)}catch(e){throw new ApiError(400,e.message)}const report=await store.finishRun(run.id,user.id,makeReport(scores,run.preferences,run.mode,{selection:run.selection,answers:b.answers}));return respond({report:publicReport(report),id:run.id})}
   }
   throw new ApiError(404,'没有找到这个页面或接口');
  }catch(error){if(!(error instanceof ApiError))console.error('API failure:',error.message);return respond({error:error instanceof ApiError?error.message:'暂时无法完成操作，请稍后再试'},error.status||500)}
