@@ -1,6 +1,8 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "anime-atlas",
+  "workers_dev": true,
+  "routes": [{ "pattern": "anima.wayella.com", "custom_domain": true }],
   "account_id": "6ce1c0f9c381f527b2bfb2746d723b09",
   "main": "worker/index.mjs",
   "compatibility_date": "2026-10-01",
