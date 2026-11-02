@@ -4,9 +4,19 @@ import fs from 'node:fs';
 import {characters} from '../data/characters.mjs';
 import {categories} from '../data/questions.mjs';
 import {questionMap,scoreAnswers,rankCharacters,makeReport,publicReport} from '../server/engine.mjs';
+import {displayCharacter} from '../server/character-display.mjs';
 
 const fixtures=JSON.parse(fs.readFileSync(new URL('./fixtures/reachable-60.json',import.meta.url),'utf8'));
 const reportFor=(w,answers=w.answers)=>publicReport(makeReport(scoreAnswers(w.selection,answers),{},'full',{selection:w.selection,answers}));
+test('旧名字结果按 ID 补充作品介绍，已有快照保留且不暴露后台字段',()=>{
+ const before={version:2,createdAt:'2026-10-30T00:00:00.000Z',mode:'standard',questionCount:24,character:{id:'naruto',name:'漩涡鸣人'}};
+ const snapshot=structuredClone(before),r=publicReport(before);
+ assert.equal(r.character.work,'火影忍者');assert.match(r.character.summary,/“我相信你”/);assert.equal(r.character.id,before.character.id);assert.deepEqual(before,snapshot);
+ const c=displayCharacter({id:'hinata',name:'旧记录名字',work:'已保存的作品名',summary:'你会保留自己的判断，也会说“我相信你”。',vector:[1],sourceUrl:'private',gender:'female'});
+ assert.equal(c.name,'旧记录名字');assert.equal(c.work,'已保存的作品名');assert.equal(c.summary,'她会保留自己的判断，也会说“我相信你”。');
+ assert.deepEqual(Object.keys(c),['id','name','work','tag','summary']);
+ assert.deepEqual(displayCharacter({id:'retired-unknown',name:'旧角色'}),{id:'retired-unknown',name:'旧角色'});
+});
 test('报告的六类分析和全部回顾均来自本轮真实答案',()=>{
  for(const w of [fixtures[0],fixtures.find(w=>w.characterId==='homura')]){
   const r=reportFor(w),a=r.analysis;assert.equal(r.version,3);assert.equal(r.questionCount,60);

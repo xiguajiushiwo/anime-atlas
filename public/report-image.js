@@ -1,13 +1,34 @@
 // Uses only the public report. No matching parameters or full answer recap enter the share image.
+import {discoveryCopy} from './character-copy.js';
 export function renderReportImage(report){
  const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d'),W=1080,M=66,inner=W-M*2;
  const font=(size,weight=400)=>`${weight} ${size}px "Noto Sans SC", "Microsoft YaHei", sans-serif`;
- const wrap=(value,size,width,weight=400)=>{ctx.font=font(size,weight);return String(value).split('\n').flatMap(paragraph=>{const rows=[];let line='';for(const c of paragraph){if(line&&ctx.measureText(line+c).width>width){rows.push(line);line=c}else line+=c}rows.push(line);return rows})};
+ const wrap=(value,size,width,weight=400)=>{
+  ctx.font=font(size,weight);
+  return String(value).split('\n').flatMap(paragraph=>{
+   const rows=[];let line='';
+   for(const c of paragraph){
+    if(line&&ctx.measureText(line+c).width>width){
+     const chars=Array.from(line),last=chars.at(-1);
+     if(chars.length>1&&(/[，。！？；：、）》」』】〕〉”’.,!?;:%)]/.test(c)||/[（《「『【〔〈“‘(]/.test(last))){chars.pop();rows.push(chars.join(''));line=last+c}
+     else{rows.push(line);line=c}
+    }else line+=c;
+   }
+   rows.push(line);return rows;
+  });
+ };
  const blocks=[];
  const add=(value,size=26,color='#75687f',weight=400,gap=22)=>{if(value)blocks.push({rows:wrap(value,size,inner-76,weight),size,color,weight,gap,line:Math.ceil(size*1.75)})};
  add('次元来信  /  ANIMA LETTER',24,'#8e77a1',600,38);
  add('这一次，你遇见的是',24,'#9986a8',400,12);
  add(report.character.name,54,'#3d3047',700,28);
+ if(report.character.work)add(`来自《${report.character.work}》`,26,'#8e77a1',500,28);
+ if(report.character.tag||report.character.summary){
+  add('先认识一下这位角色',28,'#3d3047',600,18);
+  add(report.character.tag,26,'#725785',600,12);
+  add(report.character.summary,24);
+ }
+ add(discoveryCopy(report.character),23,'#8e77a1',400,32);
  const a=report.analysis;
  if(a){
   add(a.title,32,'#725785',600,16);add(a.introduction);

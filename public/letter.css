@@ -1,6 +1,14 @@
 .account-button.unlocked{background:#e9e0f3;border-color:#e9e0f3}
 .cover-access-note{margin-top:16px;font-size:12px;line-height:1.8;color:#82728e}
 .unlock-dialog .modal-copy strong{color:#725b86;font-weight:600}
+.letter-work{font-size:14px;line-height:1.9;color:#8b739c;margin:-12px 0 24px;overflow-wrap:anywhere}
+.character-introduction{display:flex;gap:22px;margin-top:24px;padding:30px;background:#f0ebf6;border:1px solid #dfd4e8;border-radius:20px}
+.character-intro-icon{font-size:38px;line-height:1;color:#a08ab4;flex-shrink:0}.character-intro-body{min-width:0;flex:1}
+.character-introduction h2{font-size:19px;line-height:1.65;overflow-wrap:anywhere}.character-intro-tag{font-size:14px;line-height:1.9;color:#725785;margin:10px 0 8px;font-weight:600}.character-intro-summary{font-size:13px;line-height:2;color:#72667d}
+.character-watch-note{border-top:1px solid #dcd1e5;padding-top:18px;margin-top:20px}.character-watch-note h3{font-size:13px;font-weight:600;margin-bottom:8px}.character-watch-note p{font-size:13px;line-height:2;color:#81738c}
+.letter-saved-note{text-align:center;font-size:11px;line-height:1.9;color:#92809f;margin:22px 0}.legacy-letter .minimal-result{min-height:0;max-width:none;padding:48px 12px 18px}.legacy-letter .minimal-result h1{margin-bottom:25px}
+.history-card .history-work{display:block;color:#8c779c;font-size:11px;margin-bottom:6px}.history-card>div{min-width:0}.history-card h3{overflow-wrap:anywhere}
+@media(max-width:600px){.character-introduction{padding:24px 20px;gap:12px}.character-intro-icon{font-size:27px}.character-introduction h2{font-size:17px}.letter-work{font-size:13px}}
 .choice-option input:checked+.choice-card{border-color:#9983b3;background:#efeaf8;box-shadow:0 0 0 1px #9983b3}
 .choice-option input:checked+.choice-card .choice-check{background:#79608f;border-color:#79608f}
 .choice-option input:checked+.choice-card .choice-symbol{color:#79608f}

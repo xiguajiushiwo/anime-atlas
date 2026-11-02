@@ -38,8 +38,8 @@ if(process.argv.includes('--prepare')){
   const run=begun.data.run;assert.equal(run.questions.length,count);assert.ok(!JSON.stringify(run).includes('weights'));
   const answers=Object.fromEntries(run.questions.map((q,i)=>[q.id,q.options[i%q.options.length].id]));
   const done=await call('/runs/'+run.id+'/finish',{answers});assert.equal(done.status,200);
-  assert.equal(done.data.report.questionCount,count);assert.deepEqual(Object.keys(done.data.report.character).sort(),['id','name']);
-  assert.equal(done.data.report.analysis.recap.length,count);assert.equal(done.data.report.analysis.chapters.length,6);const character=characters.find(c=>c.id===done.data.report.character.id);assert.ok(character);if(gender!=='all')assert.equal(character.gender,gender);for(const e of done.data.report.analysis.recap){const q=run.questions.find(q=>q.id===e.questionId);assert.equal(e.choice,q.options.find(o=>o.id===answers[q.id]).label)}
+  assert.equal(done.data.report.questionCount,count);assert.deepEqual(Object.keys(done.data.report.character).sort(),['id','name','summary','tag','work']);
+  assert.equal(done.data.report.analysis.recap.length,count);assert.equal(done.data.report.analysis.chapters.length,6);const character=characters.find(c=>c.id===done.data.report.character.id);assert.ok(character);assert.equal(done.data.report.character.work,character.work);assert.ok(done.data.report.character.summary);if(gender!=='all')assert.equal(character.gender,gender);for(const e of done.data.report.analysis.recap){const q=run.questions.find(q=>q.id===e.questionId);assert.equal(e.choice,q.options.find(o=>o.id===answers[q.id]).label)}
   assert.deepEqual((await call('/runs/'+run.id)).data.report,done.data.report);
   assert.equal((await other('/runs/'+run.id)).status,404);
  }

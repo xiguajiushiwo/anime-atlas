@@ -1,3 +1,5 @@
+import {historyCharacter} from './character-display.mjs';
+
 export class LocalStore {
   constructor(data={},persist=()=>{}){this.data={users:[],sessions:[],codes:[],runs:[],rates:[],...data};this.persist=persist}
   save(){this.persist(this.data)}
@@ -16,7 +18,7 @@ export class LocalStore {
   async getRun(id,userId){return this.data.runs.find(x=>x.id===id&&x.user_id===userId)||null}
   async recentRuns(userId,limit=3){return this.data.runs.filter(x=>x.user_id===userId).sort((a,b)=>b.created_at-a.created_at).slice(0,limit)}
   async finishRun(id,userId,report){const run=this.data.runs.find(x=>x.id===id&&x.user_id===userId);if(!run)return null;if(!run.report){run.report=report;this.save()}return run.report}
-  async history(userId){return this.data.runs.filter(x=>x.user_id===userId&&x.report).sort((a,b)=>b.created_at-a.created_at).slice(0,20).map(x=>({id:x.id,createdAt:x.created_at,character:{id:x.report.character.id,name:x.report.character.name},questionCount:x.report.questionCount}))}
+  async history(userId){return this.data.runs.filter(x=>x.user_id===userId&&x.report).sort((a,b)=>b.created_at-a.created_at).slice(0,20).map(x=>({id:x.id,createdAt:x.created_at,character:historyCharacter(x.report.character),questionCount:x.report.questionCount}))}
 }
 export class D1Store {
   constructor(db){this.db=db}
@@ -60,5 +62,5 @@ export class D1Store {
   async getRun(id,userId){return this.decodeRun(await this.db.prepare('SELECT * FROM runs WHERE id=? AND user_id=?').bind(id,userId).first())}
   async recentRuns(id,limit=3){const r=await this.db.prepare('SELECT * FROM runs WHERE user_id=? ORDER BY created_at DESC LIMIT ?').bind(id,limit).all();return r.results.map(x=>this.decodeRun(x))}
   async finishRun(id,userId,report){await this.db.prepare('UPDATE runs SET report=? WHERE id=? AND user_id=? AND report IS NULL').bind(JSON.stringify(report),id,userId).run();return(await this.getRun(id,userId))?.report}
-  async history(id){const r=await this.db.prepare('SELECT id,created_at,report FROM runs WHERE user_id=? AND report IS NOT NULL ORDER BY created_at DESC LIMIT 20').bind(id).all();return r.results.map(x=>{const p=JSON.parse(x.report);return{id:x.id,createdAt:x.created_at,character:{id:p.character.id,name:p.character.name},questionCount:p.questionCount}})}
+  async history(id){const r=await this.db.prepare('SELECT id,created_at,report FROM runs WHERE user_id=? AND report IS NOT NULL ORDER BY created_at DESC LIMIT 20').bind(id).all();return r.results.map(x=>{const p=JSON.parse(x.report);return{id:x.id,createdAt:x.created_at,character:historyCharacter(p.character),questionCount:p.questionCount}})}
 }

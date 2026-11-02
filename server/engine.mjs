@@ -1,6 +1,7 @@
 import { characters, dimensions, modes } from '../data/characters.mjs';
 import { questions, categories } from '../data/questions.mjs';
 import {buildAnalysis,publicAnalysis} from './analysis.mjs';
+import {displayCharacter} from './character-display.mjs';
 export const questionMap = new Map(questions.map(q=>[q.id,q]));
 export function shuffle(items, random=Math.random) { const a=[...items]; for(let i=a.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a; }
 export function secureRandom(){const n=new Uint32Array(1);crypto.getRandomValues(n);return n[0]/4294967296;}
@@ -62,6 +63,6 @@ export function makeReport(scores, preferences={}, mode='standard', context=null
     disclaimer:'趣味性的故事角色探索，不是心理诊断。角色解读用于帮助你观察本轮选择。'};
 }
 export function publicReport(report){
-  return {version:report.version,createdAt:report.createdAt,mode:report.mode,questionCount:report.questionCount,character:{id:report.character.id,name:report.character.name},...(report.analysis?{analysis:publicAnalysis(report.analysis)}:{})};
+  return {version:report.version,createdAt:report.createdAt,mode:report.mode,questionCount:report.questionCount,character:displayCharacter(report.character),...(report.analysis?{analysis:publicAnalysis(report.analysis)}:{})};
 }
 export function catalog(){return characters.map(c=>publicCharacter(c))}

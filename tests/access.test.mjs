@@ -45,6 +45,26 @@ test('未解锁不能访问题目；预览和旧注册入口不能绕过解锁',
  }finally{db.close()}
 });
 
+test('历史显示最近二十次及作品名，旧记录可补充介绍且仍按浏览器隔离',async()=>{
+ const {db,store,call}=await setup();try{
+  const a=await call('/unlock',{code}),b=await call('/unlock',{code});
+  const c=characters.find(c=>c.id==='naruto'),ids=[];
+  for(let i=0;i<21;i++){
+   const id=i.toString(16).padStart(48,'0');ids.push(id);
+   await store.createRun({id,user_id:a.data.user.id,mode:'standard',preferences:{},selection:[],created_at:1000+i});
+   await store.finishRun(id,a.data.user.id,{version:2,createdAt:new Date(1000+i).toISOString(),mode:'standard',questionCount:24,character:{id:c.id,name:c.name}});
+  }
+  const history=(await call('/history',undefined,a.cookie)).data.history;
+  assert.equal(history.length,20);assert.equal(history[0].id,ids[20]);assert.equal(history.at(-1).id,ids[1]);
+  for(const item of history){assert.equal(item.character.work,c.work);assert.deepEqual(Object.keys(item.character),['id','name','work'])}
+  const read=(await call('/runs/'+ids[20],undefined,a.cookie)).data.report;
+  assert.equal(read.character.id,c.id);assert.equal(read.character.work,c.work);assert.ok(read.character.summary);assert.equal(read.analysis,undefined);
+  assert.deepEqual((await store.getRun(ids[20],a.data.user.id)).report.character,{id:c.id,name:c.name});
+  assert.equal((await call('/runs/'+ids[20],undefined,b.cookie)).status,404);
+  assert.deepEqual((await call('/history',undefined,b.cookie)).data.history,[]);
+ }finally{db.close()}
+});
+
 test('只需解锁码，同一码允许多个浏览器独立进入且不被核销',async()=>{
  const {db,call,codeHash}=await setup();try{
   const results=await Promise.all(Array.from({length:3},()=>call('/unlock',{code:' '+code+' '})));
@@ -128,7 +148,7 @@ test('解锁后的性别选择随测试保存，结果与重读均遵守选择',
    assert.equal(done.status,200);const character=characters.find(c=>c.id===done.data.report.character.id);assert.ok(character);
    if(gender!=='all')assert.equal(character.gender,gender);
    assert.deepEqual((await call('/runs/'+run.id,undefined,access.cookie)).data.report,done.data.report);
-   assert.deepEqual(Object.keys(done.data.report.character).sort(),['id','name']);
+   assert.deepEqual(Object.keys(done.data.report.character).sort(),['id','name','summary','tag','work']);
   }
  }finally{db.close()}
 });

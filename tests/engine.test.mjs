@@ -32,4 +32,4 @@ test('每个角色在 24 / 36 / 60 / 90 题中均有合法真实答案可匹配'
  }
 });
 test('完全均衡的回答明确提示未形成第一匹配',()=>{const r=makeReport(Array(8).fill(50));assert.equal(r.balanced,true);assert.match(r.reflection,/尚未形成明确/)});
-test('对外结果只暴露角色名字，不暴露匹配细节',()=>{const r=publicReport(makeReport(characters[0].vector));assert.deepEqual(Object.keys(r.character),['id','name']);assert.equal('scores' in r,false);assert.equal('overlaps' in r,false);assert.equal('vector' in r.character,false)});
+test('对外结果提供角色与作品介绍，不暴露匹配细节',()=>{const r=publicReport(makeReport(characters[0].vector));assert.deepEqual(Object.keys(r.character),['id','name','work','tag','summary']);assert.equal(r.character.work,'火影忍者');assert.ok(r.character.summary);assert.equal('scores' in r,false);assert.equal('overlaps' in r,false);assert.equal('vector' in r.character,false)});
