@@ -28,6 +28,6 @@ const inserts=await Promise.all(codes.map(async code=>`INSERT INTO activation_co
 fs.writeFileSync(path.join(destination,'codes.csv'),'code,batch\n'+codes.map(c=>`${c},${batch}`).join('\n')+'\n','utf8');
 fs.writeFileSync(path.join(destination,'import.sql'),inserts.join('\n')+'\n','utf8');
 fs.writeFileSync(path.join(destination,'codes.txt'),codes.join('\n')+'\n','utf8');
-if(site)fs.writeFileSync(path.join(destination,'delivery.txt'),codes.map(code=>`次元来信｜测试链接：${site} ｜解锁码：${code} ｜点击“开始测试”后粘贴解锁码。无需注册，同一个码可反复使用，请保存好。`).join('\n')+'\n','utf8');
+if(site)fs.writeFileSync(path.join(destination,'delivery.txt'),codes.map(code=>`次元来信｜测试链接：${site} ｜解锁码：${code} ｜可重复测试。每次点击“开始测试”后输入解锁码；无需注册，同一个码可反复使用，请保存好。`).join('\n')+'\n','utf8');
 if(args.includes('--local')){const {SqliteAdapter}=await import('./sqlite-adapter.mjs');const db=new SqliteAdapter(localDatabase);try{db.db.exec(fs.readFileSync(path.join(root,'schema.sql'),'utf8'));db.db.exec('BEGIN IMMEDIATE');try{db.db.exec(inserts.join('\n'));db.db.exec('COMMIT')}catch(error){db.db.exec('ROLLBACK');throw error}}finally{db.close()}}
 console.log(`已生成 ${count} 个 6 位数字解锁码，可重复使用。\n清单：${path.join(destination,'codes.csv')}\n一行一码：${path.join(destination,'codes.txt')}\n数据库导入文件：${path.join(destination,'import.sql')}${site?'\n一行一份发货内容：'+path.join(destination,'delivery.txt'):''}\n明文交付文件仅保存在 work/codes 中，请保管好。${args.includes('--local')?'\n已导入本地预览数据库。':''}`);

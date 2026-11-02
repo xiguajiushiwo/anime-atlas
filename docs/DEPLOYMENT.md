@@ -6,7 +6,7 @@
 - GitHub 私有仓库：https://github.com/xiguajiushiwo/anime-atlas
 - 主分支：`main`
 - Cloudflare Worker：`anime-atlas`
-- 当前发布版本：`7a4bc8b5-abee-4057-a23e-ee07ff816e29`
+- 当前发布版本：`0d4b8b2e-3e08-4bd3-89d1-af6061e8ab4f`
 - D1 数据库：`anime-atlas`，绑定名 `DB`，实际 ID 已保存在 `wrangler.jsonc`。
 
 站点使用现有 wayella.com 域名下的独立子域名，已绑定至 anime-atlas Worker。Cloudflare 自动签发 HTTPS 证书，原数据库与密码保留。免费 workers.dev 入口继续开启，但当前网络下该域名解析异常，不用作买家入口。公网入口同样需要解锁码，`?preview=1` 不会绕过密码。
@@ -36,3 +36,5 @@ npx wrangler deploy
 本次长题更新通过 30 项自动测试、本地 HTTP 36 / 60 / 90 题检查，以及 1440×900 桌面 60 题、390×844 手机 90 题浏览器检查。报告、暂存恢复、历史与 PNG 下载通过。Cloudflare 发布成功，无数据库迁移。新增 anima.wayella.com 后，在系统代理关闭的环境中通过真实 HTTPS 36 / 60 / 90 题验证，覆盖解锁、报告、权限与记录隔离。GitHub 普通推送连接超时，使用可连通的 GitHub API 同步精确 Git 对象。仅新增该测试子域名，不改动其他站点、系统代理或本机 DNS。
 
 自定义域名配置已保存于 wrangler.jsonc。创建前通过 Cloudflare changeset 确认无已有记录冲突，绑定时禁用 DNS 与已有站点覆盖；原始 workers.dev 地址继续可用于适用网络下的诊断。
+
+当前入口：每次点击「开始测试」或「再测一次」都先验证解锁码，即使浏览器已有有效会话也不跳过。封面和密码框说明可重复测试。此轮通过 9 项访问测试，以及本地、正式站点的桌面和手机尺寸入口复验；重复输入同一码仍保留本机进度和历史。

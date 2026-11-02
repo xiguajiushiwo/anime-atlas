@@ -1,4 +1,6 @@
 .account-button.unlocked{background:#e9e0f3;border-color:#e9e0f3}
+.cover-access-note{margin-top:16px;font-size:12px;line-height:1.8;color:#82728e}
+.unlock-dialog .modal-copy strong{color:#725b86;font-weight:600}
 .choice-option input:checked+.choice-card{border-color:#9983b3;background:#efeaf8;box-shadow:0 0 0 1px #9983b3}
 .choice-option input:checked+.choice-card .choice-check{background:#79608f;border-color:#79608f}
 .choice-option input:checked+.choice-card .choice-symbol{color:#79608f}
