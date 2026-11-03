@@ -12,3 +12,11 @@ node_modules/
 __pycache__/
 work/
 test-results/
+coverage/
+*.zip
+.DS_Store
+Thumbs.db
+Desktop.ini
+codes.csv
+codes.txt
+delivery.txt

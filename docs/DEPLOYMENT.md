@@ -1,42 +1,73 @@
-# 当前部署
+# Cloudflare 部署指南
 
-更新：2026-11-02。
+## 现有站点
 
-- 正式站点：https://anima.wayella.com
-- GitHub 私有仓库：https://github.com/xiguajiushiwo/anime-atlas
-- 主分支：`main`
-- Cloudflare Worker：`anime-atlas`
-- 当前发布版本：`9c44d961-3f68-49dc-b1fb-8180dcd2265a`
-- D1 数据库：`anime-atlas`，绑定名 `DB`，实际 ID 已保存在 `wrangler.jsonc`。
+- 正式入口：<https://anima.wayella.com>
+- 源码仓库：<https://github.com/xiguajiushiwo/anime-atlas>（私有）
+- 发布分支：`main`；Worker 与 D1 数据库名均为 `anime-atlas`，数据库绑定名为 `DB`。
+- `wrangler.jsonc` 保存当前账户、数据库绑定和自定义域名，对应已有站点。
+- GitHub 推送不会自动部署，发布需明确运行 Wrangler。
 
-站点使用现有 wayella.com 域名下的独立子域名，已绑定至 anime-atlas Worker。Cloudflare 自动签发 HTTPS 证书，原数据库与密码保留。免费 workers.dev 入口继续开启，但当前网络下该域名解析异常，不用作买家入口。公网入口同样需要解锁码，`?preview=1` 不会绕过密码。
-
-首批正式密码共 20 个，已导入正式 D1 数据库。以下文件只保存在部署电脑，不上传 GitHub，也不作为网站资源发布：
-
-- `work/codes/B20261102071601-ea51/codes.txt`：一行一个正式密码。
-- `work/codes/B20261102071601-ea51/delivery.txt`：一行一份正式链接、密码和使用说明。
-- 同目录 `codes.csv` 与 `import.sql`：密码批次清单和数据库导入文件。
-
-本地试用码不自动同步到正式数据库，线上使用本批次的正式密码。每个密码可重复使用，支持多浏览器；访客的答题记录相互独立。
-
-真实小红书订单与发货工具尚未连接，服务器发码认证和商品配置尚未启用，`/api/fulfillment/issue` 默认关闭。详情见 `SALES_SETUP.md`。
-
-## 后续更新
-
-源码提交并推送到 GitHub 后，在拥有当前 Cloudflare 登录权限的环境运行：
+更新现有站点：
 
 ```bash
-npx wrangler deploy
+pnpm install --frozen-lockfile
+pnpm test
+pnpm build:check
+pnpm deploy
 ```
 
-目前没有配置 GitHub 推送自动部署。现有数据库保留，不要重新初始化或重复执行旧升级文件。新批次密码需要单独导入正式 D1，再交付买家。
+普通代码更新不需要重新初始化 D1。只有存在新的、适用于当前结构的迁移时才运行迁移文件。旧升级 SQL 不能重复执行。线上密码和历史记录保存在 D1，不随代码部署重置。
 
-本地 `scripts/verify-deployment.mjs` 可复查解锁和完整答题流程。测试会留下独立的测试会话与少量结果，不会消耗或作废解锁码。
+## 部署到新账户或新站点
 
-本次长题更新通过 30 项自动测试、本地 HTTP 36 / 60 / 90 题检查，以及 1440×900 桌面 60 题、390×844 手机 90 题浏览器检查。报告、暂存恢复、历史与 PNG 下载通过。Cloudflare 发布成功，无数据库迁移。新增 anima.wayella.com 后，在系统代理关闭的环境中通过真实 HTTPS 36 / 60 / 90 题验证，覆盖解锁、报告、权限与记录隔离。GitHub 普通推送连接超时，使用可连通的 GitHub API 同步精确 Git 对象。仅新增该测试子域名，不改动其他站点、系统代理或本机 DNS。
+先登录自己的账户并创建数据库：
 
-自定义域名配置已保存于 wrangler.jsonc。创建前通过 Cloudflare changeset 确认无已有记录冲突，绑定时禁用 DNS 与已有站点覆盖；原始 workers.dev 地址继续可用于适用网络下的诊断。
+```bash
+pnpm exec wrangler login
+pnpm exec wrangler d1 create anime-atlas
+```
 
-当前入口：每次点击「开始测试」或「再测一次」都先验证解锁码，即使浏览器已有有效会话也不跳过。封面和密码框说明可重复测试。此轮通过 9 项访问测试，以及本地、正式站点的桌面和手机尺寸入口复验；重复输入同一码仍保留本机进度和历史。
+将 `wrangler.jsonc` 中的 `account_id`、`database_id`、数据库名称及 Worker 名称改为自己的配置。`routes` 中的 `anima.wayella.com` 属于现有站点；新站点应替换为自己的域名，或删除 `routes` 使用 `workers.dev`。
 
-当前结果页增加作品名、人物介绍和观看引导；历史列表与导出长图同步展示作品信息。旧名字结果按角色 ID 补齐介绍，不重新匹配或补造旧答题分析。完成的报告保存在 D1，历史显示当前浏览器身份最近 20 次完成的记录；更换浏览器、清除网站数据、退出或会话过期后，不能仅凭解锁码找回原记录。本轮 32 项自动测试通过，正式 HTTPS 的 36 / 60 / 90 题流程，以及 1440×900、390×844 浏览器的结果、历史、导出检查通过。无数据库迁移，原解锁码继续可用。
+只对全新的数据库执行：
+
+```bash
+pnpm exec wrangler d1 execute anime-atlas --remote --file schema.sql
+pnpm deploy
+```
+
+如果接手的是 2026-11-02 密码改版前的旧数据库，先备份，再执行一次：
+
+```bash
+pnpm exec wrangler d1 execute anime-atlas --remote --file migrations/2026-11-02-password-access.sql
+```
+
+使用 `schema.sql` 初始化的新数据库已经包含这些字段，不要再执行这份历史升级。
+
+## 导入可用的解锁码
+
+```bash
+pnpm codes --count 100 --site https://你的正式域名
+pnpm exec wrangler d1 execute anime-atlas --remote --file work/codes/实际批次号/import.sql
+```
+
+使用命令实际生成的批次路径；确认整批导入成功后再发货。本地 `--local` 生成的码不会自动进入线上数据库。密码明文位于 `work/codes/`，不上传 GitHub 或网站。订单自动发码、密钥配置及停用方式见 [发货配置](SALES_SETUP.md)。
+
+## 部署后验证
+
+设置 `SMOKE_ORIGIN` 为站点地址，`SMOKE_CODE_FILE` 为已导入对应数据库的密码文本文件，再运行：
+
+```bash
+node scripts/verify-deployment.mjs
+```
+
+脚本检查未解锁访问、36 / 60 / 90 题、结果重读、共享码的记录隔离等，不输出密码。它会在对应数据库留下独立测试会话及少量结果；解锁码不会被消耗或作废。
+
+还应在桌面与手机浏览器检查封面、解锁、作答、刷新恢复、结果历史和 PNG 下载。真实店铺付款与发货需要另用测试订单验证；网站接口测试不能代替支付渠道验收。
+
+## 数据与运行配置
+
+只有 `public/` 作为静态资源发布。数据库、解锁码、订单资料、环境密钥及维护文档应留在静态目录之外。定时任务清理过期会话与限流记录，不清空已完成报告。
+
+修改数据库前保留备份；备份发码加密密钥，避免旧订单无法解密重发。Cloudflare 敏感配置用 `wrangler secret put` 设置，配置名和用途见 [发货配置](SALES_SETUP.md)。

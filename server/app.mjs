@@ -1,5 +1,5 @@
-import {characters,dimensions,works,modes} from '../data/characters.mjs';
-import {catalog,selectQuestions,presentQuestions,scoreAnswers,makeReport,publicReport,rankCharacters} from './engine.mjs';
+import {works,modes} from '../data/characters.mjs';
+import {selectQuestions,presentQuestions,scoreAnswers,makeReport,publicReport,rankCharacters} from './engine.mjs';
 import {hash,randomId,normalizeCode,cookieToken,sessionCookie,securityHeaders} from './security.mjs';
 import {handleFulfillment} from './fulfillment.mjs';
 import {visibleModes,defaultMode} from '../data/test-modes.mjs';
@@ -25,7 +25,6 @@ export async function handleApi(request,store,env={}){
   const body=async()=>{const text=await request.text();if(text.length>20000)throw new ApiError(413,'请求内容过长');try{return JSON.parse(text)}catch{throw new ApiError(400,'请求内容不是有效的数据')}};
   const throttle=async(action,limit=12)=>{const ip=request.headers.get('CF-Connecting-IP')||env.clientIp||'local';if(!await store.rate(`${action}:${await hash(ip)}`,limit,600000))throw new ApiError(429,'操作有些频繁，请稍后再试')};
   if(path==='/api/bootstrap'&&request.method==='GET')return respond({user:safeUser(user),characters:[],dimensions:[],works:[],modes:visibleModes,defaultMode,demo:false});
-  if(path==='/api/sample'&&request.method==='GET')return respond({report:{...publicReport(makeReport(characters[0].vector,{},'standard')),sample:true}});
   if(path==='/api/unlock'&&request.method==='POST'){
    await throttle('unlock',20);const b=await body();const code=normalizeCode(b?.code);
    if(!/^\d{6}$/.test(code)&&!(/^(CY|ANIMA)-[A-Z0-9-]+$/.test(code)&&code.length>=8&&code.length<=80))throw new ApiError(400,'请输入 6 位数字解锁码');

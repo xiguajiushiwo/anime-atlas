@@ -48,7 +48,7 @@ if(process.argv.includes('--prepare')){
  assert.equal((await call('/logout',{})).status,200);assert.equal((await call('/history')).status,401);
  assert.equal((await call('/unlock',{code})).status,200);
  const page=await fetch(origin+'/?preview=1');assert.equal(page.status,200);assert.match(await page.text(),/次元来信/);
- for(const path of ['/data/characters.mjs','/CHARACTER_ROSTER.md','/schema.sql','/.env','/docs/SALES_SETUP.md']){
+ for(const path of ['/data/characters.mjs','/CHARACTER_ROSTER.md','/docs/CHARACTER_ROSTER.md','/schema.sql','/.env','/docs/SALES_SETUP.md']){
   const response=await fetch(origin+path),text=await response.text();
   assert.ok(response.status===404||response.headers.get('content-type')?.includes('text/html'),path);
   assert.ok(!text.includes('CREATE TABLE')&&!text.includes('export const characters')&&!text.includes('FULFILLMENT_API_KEY'),path);

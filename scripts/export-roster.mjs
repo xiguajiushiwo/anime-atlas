@@ -32,5 +32,5 @@ for (const c of characters.filter(c=>c.sourceUrl))
 lines.push('', '电影版本辅助核对：[哈尔的移动城堡](https://anilist.co/anime/431)、[龙猫](https://anilist.co/anime/523)。', '',
   '## 匹配与展示', '',
   '名单通过 data/roster-policy.mjs 控制。新增资料不会自动进入结果池。首页和结果接口不返回完整名单、评分向量或上述资料页。历史已完成结果继续保存，新生成结果使用当前名单。', '');
-fs.writeFileSync(new URL('../CHARACTER_ROSTER.md',import.meta.url),lines.join('\n'));
+fs.writeFileSync(new URL('../docs/CHARACTER_ROSTER.md',import.meta.url),lines.join('\n'));
 console.log(`Exported owner roster: ${works.length} works, ${characters.length} characters.`);

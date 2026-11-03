@@ -65,4 +65,3 @@ export function makeReport(scores, preferences={}, mode='standard', context=null
 export function publicReport(report){
   return {version:report.version,createdAt:report.createdAt,mode:report.mode,questionCount:report.questionCount,character:displayCharacter(report.character),...(report.analysis?{analysis:publicAnalysis(report.analysis)}:{})};
 }
-export function catalog(){return characters.map(c=>publicCharacter(c))}
